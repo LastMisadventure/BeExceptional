@@ -4,37 +4,30 @@ Import-Module BeExceptional -Force
 
 InModuleScope BeExceptional {
 
-    function TestWriteErrorErrorActionStop {
+    Describe "private\Functions" {
 
-        [CmdletBinding(PositionalBinding, ConfirmImpact = 'medium')]
+        $message = 'TerminatingError'
 
-        param (
+        It "Mimics 'throw' if ErrorAction 'Stop' is set" {
 
-        )
+            { TestWriteError -UseErrorAction Stop -Message $message } | Should -Throw $message
 
-        Write-Error -ErrorAction Stop -Message 'TerminatingError'
+            { TestThrow -Message $message } | Should -Throw $message
 
-    }
+        }
 
-    function TestThrow {
+        It "Mimics 'throw' if ErrorAction 'Stop' is set, even if the caller specifies EA 'SilentlyContinue'" {
 
-        [CmdletBinding(PositionalBinding, ConfirmImpact = 'medium')]
+            { TestWriteError -UseErrorAction Stop -Message $message -ErrorAction SilentlyContinue } | Should -Throw $message
 
-        param (
+            { TestThrow -Message $message } | Should -Throw $message
 
-        )
+        }
 
-        throw 'TerminatingError'
+        # This test writes to the error steam, but does not terminate operation.
+        It "Does not mimic 'throw' if ErrorAction is not set" {
 
-    }
-
-    Describe "private\Exceptions" {
-
-        It "Behaves the same as 'throw' if ErrorAction 'Stop' is set" {
-
-            { TestWriteErrorErrorActionStop } | Should -Throw 'TerminatingError'
-
-            { TestThrow } | Should -Throw 'TerminatingError'
+            { TestWriteError -Message $message } | Should -Not -Throw
 
         }
 
